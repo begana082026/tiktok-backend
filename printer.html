@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfect Smooth Thermal Printer Overlay</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* لکڑی کا ریئلسٹک ٹیبل بیک گراؤنڈ */
+            background: #b5651d;
+            background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+                              repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(0,0,0,0.08) 40px, rgba(0,0,0,0.08) 80px);
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* 3D اسٹیج */
+        .stage {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            perspective: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* پرنٹر کا بلیک ہیڈ باکس */
+        .printer-main-box {
+            position: absolute;
+            top: 0;
+            width: 430px;
+            height: 75px;
+            background: linear-gradient(180deg, #222 0%, #0d0d0d 100%);
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.2);
+            z-index: 50;
+            border-bottom: 5px solid #ff3b5c;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 6px;
+        }
+
+        /* پرنٹر کا سلاٹ جہاں سے کاغذ باہر آئے گا */
+        .printer-slot-opening {
+            width: 360px;
+            height: 10px;
+            background: #000000;
+            border-radius: 5px;
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.9);
+        }
+
+        /* دونوں سائیڈ کے میٹل راڈز (Metal Rods) */
+        .metal-rod-left, .metal-rod-right {
+            position: absolute;
+            top: 30px;
+            width: 14px;
+            height: 95vh;
+            background: linear-gradient(90deg, #777, #ccc 50%, #444);
+            border-radius: 7px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+            z-index: 45;
+        }
+        .metal-rod-left { left: 20px; }
+        .metal-rod-right { right: 20px; }
+
+        /* راڈز کے کلپس */
+        .rod-clamp-top-l, .rod-clamp-top-r, .rod-clamp-bot-l, .rod-clamp-bot-r {
+            position: absolute;
+            width: 24px;
+            height: 35px;
+            background: #555;
+            border-radius: 4px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+            z-index: 46;
+        }
+        .rod-clamp-top-l { left: 15px; top: 40px; }
+        .rod-clamp-top-r { right: 15px; top: 40px; }
+        .rod-clamp-bot-l { left: 15px; bottom: 60px; }
+        .rod-clamp-bot-r { right: 15px; bottom: 60px; }
+
+        /* کاغذ کا ویوپورٹ */
+        .paper-viewport {
+            position: absolute;
+            top: 70px;
+            width: 360px;
+            height: calc(100vh - 70px);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* لمبا مسلسل کاغذ جو بالکل سموتھ فلو میں نیچے خسکتا جائے گا */
+        .paper-roll {
+            width: 100%;
+            background: #fdfbf7;
+            background-image: linear-gradient(to bottom, #fdfbf7 0%, #f3eee3 100%);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border-left: 2px dashed #d5cbc1;
+            border-right: 2px dashed #d5cbc1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 15px;
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* ہر پرنٹ ہونے والی سلپ کا پریمیم ڈیزائن */
+        .print-item {
+            width: 325px;
+            margin-bottom: 18px;
+            padding: 16px;
+            border-bottom: 2px dashed #b5ab9f;
+            text-align: center;
+            position: relative;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            animation: smoothAppear 0.6s ease-out forwards;
+        }
+
+        @keyframes smoothAppear {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* اوتار اور نام */
+        .avatar-box {
+            width: 75px;
+            height: 75px;
+            margin: 0 auto 8px auto;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #333;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            background: #e2e8f0;
+        }
+        .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        .username {
+            font-size: 19px;
+            font-weight: 800;
+            color: #111;
+            margin-bottom: 4px;
+        }
+
+        .action-text {
+            font-size: 13px;
+            font-weight: bold;
+            color: #ff3b5c;
+            text-transform: uppercase;
+        }
+
+        /* 1. Join / Follow Setup */
+        .tier-join { border-left: 5px solid #3b82f6; }
+        .tier-join .action-text { color: #3b82f6; }
+
+        /* 2. Low Gifts (1-19 Coins) */
+        .tier-low { border-left: 5px solid #ff3b5c; }
+        .tier-low .badge { background: #ffe6eb; color: #ff3b5c; padding: 4px 12px; border-radius: 10px; font-size: 13px; font-weight: bold; display: inline-block; margin-top: 6px; }
+
+        /* 3. VIP Supporter (20-99 Coins) */
+        .tier-vip { background: #fffdf2; border: 2px solid #ffaa00; border-left: 6px solid #ffaa00; }
+        .tier-vip .vip-badge { background: #ffaa00; color: #000; font-weight: 900; font-size: 12px; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-bottom: 6px; box-shadow: 0 2px 5px rgba(255,170,0,0.4); }
+        .tier-vip .avatar-box { width: 85px; height: 85px; border-color: #ffaa00; }
+
+        /* 4. Mega Gift / VIP+ (100+ Coins - شاہانہ فریم اور دل) */
+        .tier-mega { background: linear-gradient(135deg, #fff2f5 0%, #ffe6ec 100%); border: 3px solid #ff3b5c; border-radius: 12px; padding: 20px; box-shadow: 0 6px 20px rgba(255,59,92,0.25); }
+        .tier-mega .mega-badge { background: linear-gradient(90deg, #ff3b5c, #ff1e4d); color: #fff; font-weight: 900; font-size: 13px; padding: 5px 16px; border-radius: 8px; display: inline-block; margin-bottom: 8px; box-shadow: 0 3px 8px rgba(255,59,92,0.5); }
+        .tier-mega .mega-frame { position: relative; width: 110px; height: 110px; margin: 0 auto 8px auto; }
+        .tier-mega .avatar-box { width: 110px; height: 110px; border: 4px solid #ff3b5c; margin: 0; box-shadow: 0 0 15px rgba(255,59,92,0.4); }
+        .tier-mega .rotating-border { position: absolute; top: -6px; left: -6px; right: -6px; bottom: -6px; border: 3px dashed #ff3b5c; border-radius: 50%; animation: spin 8s linear infinite; }
+        .tier-mega .username { font-size: 22px; color: #d63031; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .tier-mega .badge { background: #ffe6eb; color: #d63031; font-size: 14px; padding: 5px 14px; border-radius: 10px; font-weight: bold; display: inline-block; margin-top: 6px; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* دلوں کی اینیمیشن جو بائیں اور دائیں طرف اڑیں گے */
+        .heart {
+            position: absolute;
+            font-size: 22px;
+            animation: floatHeart 1.8s ease-out forwards;
+            z-index: 20;
+        }
+        @keyframes floatHeart {
+            0% { transform: translateY(0) scale(0.6); opacity: 1; }
+            100% { transform: translateY(-90px) scale(1.4); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stage">
+        <!-- سائیڈ میٹل راڈز -->
+        <div class="metal-rod-left"></div>
+        <div class="metal-rod-right"></div>
+        <div class="rod-clamp-top-l"></div>
+        <div class="rod-clamp-top-r"></div>
+        <div class="rod-clamp-bot-l"></div>
+        <div class="rod-clamp-bot-r"></div>
+
+        <!-- پرنٹر کا ہیڈ اور سلاٹ -->
+        <div class="printer-main-box">
+            <div class="printer-slot-opening"></div>
+        </div>
+
+        <!-- پیپر ویوپورٹ اور رول -->
+        <div class="paper-viewport">
+            <div class="paper-roll" id="paperRoll"></div>
+        </div>
+    </div>
+
+    <script>
+        const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+
+        function triggerPrint(data) {
+            const paperRoll = document.getElementById('paperRoll');
+            const item = document.createElement('div');
+            
+            let tierClass = '';
+            let innerHTML = '';
+
+            // 1. Join / Follow
+            if (data.type === 'join' || data.type === 'follow') {
+                tierClass = 'tier-join';
+                innerHTML = `
+                    <div class="avatar-box"><img src="${data.avatar || defaultAvatar}" alt="User"></div>
+                    <div class="username">${data.username}</div>
+                    <div class="action-text">Welcome to the Live! 👋</div>
+                `;
+            }
+            // 2. Low Gifts (1 to 19 Coins)
+            else if (data.coins >= 1 && data.coins <= 19) {
+                tierClass = 'tier-low';
+                innerHTML = `
+                    <div class="avatar-box"><img src="${data.avatar || defaultAvatar}" alt="User"></div>
+                    <div class="username">${data.username}</div>
+                    <div class="badge">Thanks for ${data.giftName || 'Rose 🌹'} (x${data.coins})! ❤️</div>
+                `;
+            }
+            // 3. VIP Supporter (20 to 99 Coins)
+            else if (data.coins >= 20 && data.coins <= 99) {
+                tierClass = 'tier-vip';
+                innerHTML = `
+                    <div class="vip-badge">⭐ VIP SUPPORTER</div>
+                    <div class="avatar-box"><img src="${data.avatar || defaultAvatar}" alt="User"></div>
+                    <div class="username">${data.username}</div>
+                    <div class="badge" style="background:#fff3cd; color:#856404;">Thanks for ${data.giftName} (${data.coins} Coins)! 🌟</div>
+                `;
+            }
+            // 4. Mega Gift / VIP+ (100+ Coins)
+            else if (data.coins >= 100) {
+                tierClass = 'tier-mega';
+                innerHTML = `
+                    <div class="mega-badge">👑 BIG LOVE & RESPECT 👑</div>
+                    <div class="mega-frame">
+                        <div class="rotating-border"></div>
+                        <div class="avatar-box"><img src="${data.avatar || defaultAvatar}" alt="User"></div>
+                    </div>
+                    <div class="username">${data.username}</div>
+                    <div class="badge">Mega Gift: ${data.giftName} (${data.coins} Coins)! 🔥</div>
+                `;
+            }
+
+            item.className = `print-item ${tierClass}`;
+            item.innerHTML = innerHTML;
+
+            // بیک اینڈ پر سب سے اوپر نیا آئٹم جوڑیں تاکہ سلاٹ سے باہر نکلتا ہوا آئے
+            paperRoll.insertBefore(item, paperRoll.firstChild);
+
+            // میگا گفٹ پر دلوں کی بارش
+            if (data.coins >= 100) {
+                for (let i = 0; i < 8; i++) {
+                    setTimeout(() => {
+                        const heart = document.createElement('div');
+                        heart.className = 'heart';
+                        heart.innerText = i % 2 === 0 ? '💖' : '❤️';
+                        heart.style.left = i < 4 ? (8 + Math.random() * 20) + '%' : (72 + Math.random() * 20) + '%';
+                        heart.style.top = '50%';
+                        item.appendChild(heart);
+                    }, i * 150);
+                }
+            }
+        }
+
+        // ٹیسٹ کالز (Acode میں چیک کرنے کے لیے)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                triggerPrint({ type: 'join', username: 'Ali_Gondal' });
+            }, 1000);
+
+            setTimeout(() => {
+                triggerPrint({ type: 'gift', username: 'Zain_Pro', coins: 5, giftName: 'Rose 🌹' });
+            }, 4000);
+
+            setTimeout(() => {
+                triggerPrint({ type: 'gift', username: 'King_Khan', coins: 50, giftName: 'Perfume 🧴' });
+            }, 7000);
+
+            setTimeout(() => {
+                triggerPrint({ type: 'gift', username: 'Queen_Ayesha', coins: 500, giftName: 'Universe 🌌' });
+            }, 10000);
+        });
+    </script>
+</body>
+</html>
